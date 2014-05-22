@@ -1,2 +1,2 @@
-GET	   /        spreat.controllers.SpreatController.index
+GET	   /        controllers.SpreatController.index
 

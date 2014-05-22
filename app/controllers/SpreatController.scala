@@ -1,8 +1,8 @@
-package spreat.controllers
+package controllers
 
 import play.api.mvc.Controller
 import play.api.mvc.Action
-import spreat.views.html.main
+import views.html.main
 
 object SpreatController extends Controller {
 
