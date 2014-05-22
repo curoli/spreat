@@ -1,0 +1,2 @@
+GET	   /        spreat.controllers.SpreatController.index
+
