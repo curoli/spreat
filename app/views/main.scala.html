@@ -3,6 +3,14 @@
 <html>
 <head>
 <title>Spreat - @greeting</title>
+<script src="/assets/javascripts/jquery.js"></script>
+<script>
+$(document).ready(function(){
+  $("circle").click(function(){
+    $(this).attr({"fill": "blue", "stroke" : "black"});
+  });
+});
+</script>
 </head>
 <body>
 	<h1>@greeting</h1>
@@ -10,14 +18,7 @@
 
 	<svg width="100" height="100">
   <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4"
-			fill="yellow" onclick="makeBlue(this)" />
+			fill="yellow" />
 </svg>
-
-	<script>
-		function makeBlue(element) {
-			element.setAttribute("fill", "blue")
-		}
-	</script>
-
 </body>
 </html>
