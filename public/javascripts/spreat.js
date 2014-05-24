@@ -15,5 +15,5 @@ function drawCircle() {
 }
 
 function makeBlue(element) {
-	d3.select(element).attr("fill", "blue").attr("stroke", "black")
+	d3.select(element).transition().attr("fill", "blue").attr("stroke", "black")
 }
