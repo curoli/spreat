@@ -4,7 +4,7 @@
 
 function drawCircles() {
 	var xs = [ 50, 150, 250 ]
-	d3.select("svg").selectAll("circle").data(xs).enter().append("circle")
+	d3.select("svg").selectAll("circle").data(xs).enter().append("circle").transition()
 			.attr("cx", function(d) {
 				return d
 			}).attr("cy", "50").attr("r", "40").attr("stroke", "green").attr(
