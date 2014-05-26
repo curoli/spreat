@@ -7,14 +7,12 @@ var rx = 50
 var ry = (2/3) * rx * Math.sqrt(3)
 
 function hexagonPoints(cxy) {
-	var cx = cxy.x
-	var cy = cxy.y
-	var x = [ cx + rx, cx, cx - rx, cx - rx, cx, cx + rx ]
-	var y = [ cy - 0.5 * ry, cy - ry, cy - 0.5 * ry, cy + 0.5 * ry, cy + ry,
-			cy + 0.5 * ry ]
-	return x[0] + ", " + y[0] + " " + x[1] + ", " + y[1] + " " + x[2] + ", "
-			+ y[2] + " " + x[3] + ", " + y[3] + " " + x[4] + ", " + y[4] + " "
-			+ x[5] + ", " + y[5]
+	var xyStrings = []
+	for(var ic = 0; ic < 6; ic++) {
+		var angle = (2*ic + 1)*Math.PI/6
+		xyStrings.push((cxy.x + ry*Math.cos(angle)) + "," + (cxy.y + ry*Math.sin(angle)))
+	}
+	return xyStrings.join(" ")
 }
 
 function drawBoard() {
