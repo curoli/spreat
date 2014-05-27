@@ -18,13 +18,29 @@ function hexagonPoints(cxy) {
 	return xyStrings.join(" ")
 }
 
+function isInBoard(ix, iy) {
+	return ix + iy >= boardSize && ix + iy <= 3 * boardSize
+}
+
+function areNeighbours(ix1, iy1, ix2, iy2) {
+	var ixd = ix1 - ix2
+	if(ixd < -1 || ixd > 1) { return false }
+	var iyd = iy1 - iy2
+	if(iyd < -1 || iyd > 1) { return false }
+	if(ixd == 0 || iyd == 0) { return false }
+	var d = ixd + iyd
+	return d >= -1 && d <= 1
+}
+
 function drawBoard() {
 	for (var ix = 0; ix < 2 * boardSize + 1; ix++) {
 		for (var iy = 0; iy < 2 * boardSize + 1; iy++) {
-			if (ix + iy >= boardSize && ix + iy <= 3 * boardSize) {
+			if (isInBoard(ix, iy)) {
 				fields.push({
 					x : pad + rx + (2 * ix - boardSize) * rx + iy * rx,
-					y : pad + rx + iy * 1.5 * ry
+					y : pad + rx + iy * 1.5 * ry,
+					ix : ix,
+					iy : iy
 				})
 			}
 		}
