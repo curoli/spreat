@@ -24,15 +24,21 @@ function isInBoard(ix, iy) {
 
 function areNeighbours(ix1, iy1, ix2, iy2) {
 	var ixd = ix1 - ix2
-	if(ixd < -1 || ixd > 1) { return false }
+	if (ixd < -1 || ixd > 1) {
+		return false
+	}
 	var iyd = iy1 - iy2
-	if(iyd < -1 || iyd > 1) { return false }
-	if(ixd == 0 || iyd == 0) { return false }
+	if (iyd < -1 || iyd > 1) {
+		return false
+	}
+	if (ixd == 0 && iyd == 0) {
+		return false
+	}
 	var d = ixd + iyd
 	return d >= -1 && d <= 1
 }
 
-function drawBoard() {
+function initFields() {
 	for (var ix = 0; ix < 2 * boardSize + 1; ix++) {
 		for (var iy = 0; iy < 2 * boardSize + 1; iy++) {
 			if (isInBoard(ix, iy)) {
@@ -40,21 +46,65 @@ function drawBoard() {
 					x : pad + rx + (2 * ix - boardSize) * rx + iy * rx,
 					y : pad + rx + iy * 1.5 * ry,
 					ix : ix,
-					iy : iy
+					iy : iy,
+					iField : fields.length,
+					iNeighbours : [],
+					fill : "yellow"
 				})
 			}
 		}
 	}
+	for (var i1 = 0; i1 < fields.length; i1++) {
+		var field1 = fields[i1]
+		for (var i2 = 0; i2 < fields.length; i2++) {
+			var field2 = fields[i2]
+			if (areNeighbours(field1.ix, field1.iy, field2.ix, field2.iy)) {
+				field1.iNeighbours.push(i2)
+			}
+		}
+	}
+//	alert(fields.toSource())
+	var fieldShapes = d3.select("svg").attr("width",
+			2 * pad + rx * (4 * boardSize + 2)).attr("height",
+			(2 * pad + rx + ry * (3 * boardSize + 1.5)))
 	d3.select("#numberOfFields").text("Number of fields: " + fields.length)
-	d3.select("svg").attr("width", 2 * pad + rx * (4 * boardSize + 2)).attr(
-			"height", (2 * pad + rx + ry * (3 * boardSize + 1.5))).selectAll(
-			"polygon").data(fields).enter().append("polygon").transition()
-			.attr("points", function(d) {
-				return hexagonPoints(d)
-			}).attr("stroke", "green").attr("stroke-width", "3").attr("fill",
-					"yellow").attr("onclick", "makeBlue(this)")
 }
 
-function makeBlue(element) {
-	d3.select(element).transition().attr("fill", "blue")
+function drawBoard() {
+	var fieldShapes = d3.select("svg").selectAll("polygon").data(fields)
+	fieldShapes.enter().append("polygon").transition().attr("points",
+			function(d) {
+				return hexagonPoints(d)
+			}).attr("stroke", "green").attr("stroke-width", "3").attr("fill",
+			function(d) {
+				return d.fill
+			}).attr("onclick", "onFieldClick(this)").attr("iField",
+			function(d) {
+				return d.iField
+			})
+	fieldShapes.transition().attr("points", function(d) {
+		return hexagonPoints(d)
+	}).attr("stroke", "green").attr("stroke-width", "3").attr("fill",
+			function(d) {
+				return d.fill
+			}).attr("onclick", "onFieldClick(this)").attr("iField",
+			function(d) {
+				return d.iField
+			})
+}
+
+function drawNewBoard() {
+	initFields()
+	drawBoard()
+}
+
+function onFieldClick(element) {
+	var iField = parseInt(element.getAttribute("iField"))
+	var field = fields[iField]
+	field.fill = "blue"
+	for (var i = 0; i < field.iNeighbours.length; i++) {
+		var iNeighbour = field.iNeighbours[i]
+		fields[iNeighbour].fill = "red"
+	}
+	drawBoard()
 }
