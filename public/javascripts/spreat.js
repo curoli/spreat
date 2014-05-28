@@ -7,6 +7,7 @@ var pad = 10
 var rx = 25
 var ry = (2 / 3) * rx * Math.sqrt(3)
 var fields = []
+var atoms = []
 
 function hexagonPoints(cxy) {
 	var xyStrings = []
@@ -63,7 +64,7 @@ function initFields() {
 			}
 		}
 	}
-//	alert(fields.toSource())
+	// alert(fields.toSource())
 	var fieldShapes = d3.select("svg").attr("width",
 			2 * pad + rx * (4 * boardSize + 2)).attr("height",
 			(2 * pad + rx + ry * (3 * boardSize + 1.5)))
@@ -91,6 +92,23 @@ function drawBoard() {
 			function(d) {
 				return d.iField
 			})
+	var atomShapes = d3.select("svg").selectAll("circle").data(atoms)
+	atomShapes.enter().append("circle").transition().attr("cx", function(d) {
+		return d.x
+	}).attr("cy", function(d) {
+		return d.y
+	}).attr("r", 5).attr("stroke", "black").attr("stroke-width", 1).attr(
+			"fill", function(d) {
+				return d.fill
+			})
+	atomShapes.transition().attr("cx", function(d) {
+		return d.x
+	}).attr("cy", function(d) {
+		return d.y
+	}).attr("r", 5).attr("stroke", "black").attr("stroke-width", 1).attr(
+			"fill", function(d) {
+				return d.fill
+			})
 }
 
 function drawNewBoard() {
@@ -106,5 +124,10 @@ function onFieldClick(element) {
 		var iNeighbour = field.iNeighbours[i]
 		fields[iNeighbour].fill = "red"
 	}
+	var atom = {}
+	atom.x = field.x
+	atom.y = field.y
+	atom.fill = "orange"
+	atoms.push(atom)
 	drawBoard()
 }
