@@ -6,7 +6,7 @@ var boardSize = 5
 var pad = 10
 var rx = 25
 var ry = (2 / 3) * rx * Math.sqrt(3)
-var rAtom = 5
+var rAtom = 7
 var fields = []
 var atoms = []
 
