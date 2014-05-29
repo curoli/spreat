@@ -71,24 +71,41 @@ function initFields() {
 	d3.select("#numberOfFields").text("Number of fields: " + fields.length)
 }
 
+function onFieldClick(event) {
+	var mousePos = d3.mouse(this)
+	var iField = parseInt(this.getAttribute("iField"))
+	var field = fields[iField]
+	field.fill = "blue"
+	for (var i = 0; i < field.iNeighbours.length; i++) {
+		var iNeighbour = field.iNeighbours[i]
+		fields[iNeighbour].fill = "red"
+	}
+	var atom = {}
+	atom.x = mousePos[0]
+	atom.y = mousePos[1]
+	atom.fill = "orange"
+	atoms.push(atom)
+	drawBoard()
+}
+
 function drawBoard() {
 	var fieldShapes = d3.select("svg").selectAll("polygon").data(fields)
-	fieldShapes.enter().append("polygon").transition().attr("points",
+	fieldShapes.enter().append("polygon").on("click", onFieldClick).transition().attr("points",
 			function(d) {
 				return hexagonPoints(d)
 			}).attr("stroke", "green").attr("stroke-width", "3").attr("fill",
 			function(d) {
 				return d.fill
-			}).attr("onclick", "onFieldClick(this)").attr("iField",
+			}).attr("iField",
 			function(d) {
 				return d.iField
 			})
-	fieldShapes.transition().attr("points", function(d) {
+	fieldShapes.on("click", onFieldClick).transition().attr("points", function(d) {
 		return hexagonPoints(d)
 	}).attr("stroke", "green").attr("stroke-width", "3").attr("fill",
 			function(d) {
 				return d.fill
-			}).attr("onclick", "onFieldClick(this)").attr("iField",
+			}).attr("iField",
 			function(d) {
 				return d.iField
 			})
@@ -116,18 +133,3 @@ function drawNewBoard() {
 	drawBoard()
 }
 
-function onFieldClick(element) {
-	var iField = parseInt(element.getAttribute("iField"))
-	var field = fields[iField]
-	field.fill = "blue"
-	for (var i = 0; i < field.iNeighbours.length; i++) {
-		var iNeighbour = field.iNeighbours[i]
-		fields[iNeighbour].fill = "red"
-	}
-	var atom = {}
-	atom.x = field.x
-	atom.y = field.y
-	atom.fill = "orange"
-	atoms.push(atom)
-	drawBoard()
-}
