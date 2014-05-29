@@ -9,6 +9,15 @@ var ry = (2 / 3) * rx * Math.sqrt(3)
 var rAtom = 7
 var fields = []
 var atoms = []
+var player1 = {
+	color : "yellow"
+}
+var player2 = {
+	color : "blue"
+}
+var players = [ player1, player2 ]
+var iCurrentPlayer = 0
+var waitingToMove = false
 
 function hexagonPoints(cxy) {
 	var xyStrings = []
@@ -52,7 +61,8 @@ function initFields() {
 					iField : fields.length,
 					iNeighbours : [],
 					atoms : [],
-					fill : "#aaaaaa"
+					fill : "#aaaaaa",
+					hasOwner : false
 				})
 			}
 		}
@@ -74,19 +84,29 @@ function initFields() {
 }
 
 function onFieldClick(event) {
-	var mousePos = d3.mouse(this)
-	var iField = parseInt(this.getAttribute("iField"))
-	var field = fields[iField]
-	var atom = {}
-	atom.x = mousePos[0]
-	atom.y = mousePos[1]
-	atom.fill = "orange"
-	atom.iField = iField
-	atoms.push(atom)
-	field.atoms.push(atom)
-	packAtomsOnField(field)
-	redistributeAtoms()
-	drawBoard()
+	if (waitingToMove) {
+		waitingToMove = false
+		var mousePos = d3.mouse(this)
+		var iField = parseInt(this.getAttribute("iField"))
+		var field = fields[iField]
+		var currentPlayer = players[iCurrentPlayer]
+		if (!field.hasOwner || (field.owner == currentPlayer)) {
+			field.hasOwner = true
+			field.owner = currentPlayer
+			var atom = {}
+			atom.x = mousePos[0]
+			atom.y = mousePos[1]
+			atom.iField = iField
+			atom.owner = currentPlayer
+			atoms.push(atom)
+			field.atoms.push(atom)
+			packAtomsOnField(field)
+			redistributeAtoms()
+			drawBoard()
+			iCurrentPlayer = (iCurrentPlayer + 1) % players.length
+		}
+	}
+	waitingToMove = true
 }
 
 function drawBoard() {
@@ -124,13 +144,14 @@ function drawBoard() {
 		return d.y
 	}).attr("r", rAtom).attr("stroke", "#000000").attr("stroke-width", 1).attr(
 			"fill", function(d) {
-				return d.fill
+				return d.owner.color
 			})
 }
 
 function drawNewBoard() {
 	initFields()
 	drawBoard()
+	waitingForMove = true
 }
 
 function shiftAtomToR(atom, anchor, r, shiftIfCloser) {
@@ -175,6 +196,7 @@ function packAtomsOnField(field) {
 }
 
 function redistributeAtoms() {
+	var currentPlayer = players[iCurrentPlayer]
 	var keepGoing = true
 	while (keepGoing) {
 		keepGoing = false
@@ -182,7 +204,11 @@ function redistributeAtoms() {
 			var field = fields[iField]
 			if (field.atoms.length >= field.iNeighbours.length) {
 				for (var iFieldAtom = 0; iFieldAtom < field.iNeighbours.length; iFieldAtom++) {
-					field.atoms[iFieldAtom].iField = field.iNeighbours[iFieldAtom]
+					var iNeighbour = field.iNeighbours[iFieldAtom]
+					field.atoms[iFieldAtom].iField = iNeighbour
+					var neighbour = fields[iNeighbour]
+					neighbour.hasOwner = true
+					neighbour.owner = currentPlayer
 				}
 				keepGoing = true
 			}
@@ -195,7 +221,15 @@ function redistributeAtoms() {
 		}
 		for (var iField = 0; iField < fields.length; iField++) {
 			var field = fields[iField]
-			packAtomsOnField(field)
+			if (field.atoms.length > 0) {
+				for(var iFieldAtom = 0; iFieldAtom < field.atoms.length; iFieldAtom++) {
+					var atom = field.atoms[iFieldAtom]
+					atom.owner = field.owner
+				}
+				packAtomsOnField(field)
+			} else {
+				field.hasOwner = false
+			}
 		}
 		drawBoard()
 	}
