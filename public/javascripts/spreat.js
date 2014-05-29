@@ -52,7 +52,7 @@ function initFields() {
 					iField : fields.length,
 					iNeighbours : [],
 					atoms : [],
-					fill : "yellow"
+					fill : "#aaaaaa"
 				})
 			}
 		}
@@ -77,11 +77,6 @@ function onFieldClick(event) {
 	var mousePos = d3.mouse(this)
 	var iField = parseInt(this.getAttribute("iField"))
 	var field = fields[iField]
-	field.fill = "blue"
-	for (var i = 0; i < field.iNeighbours.length; i++) {
-		var iNeighbour = field.iNeighbours[i]
-		fields[iNeighbour].fill = "red"
-	}
 	var atom = {}
 	atom.x = mousePos[0]
 	atom.y = mousePos[1]
@@ -100,7 +95,7 @@ function drawBoard() {
 	fieldShapes.enter().append("polygon").on("click", onFieldClick)
 			.transition().attr("points", function(d) {
 				return hexagonPoints(d)
-			}).attr("stroke", "green").attr("stroke-width", "3").attr("fill",
+			}).attr("stroke", "#ffffff").attr("stroke-width", "3").attr("fill",
 					function(d) {
 						return d.fill
 					}).attr("iField", function(d) {
@@ -109,7 +104,7 @@ function drawBoard() {
 	fieldShapes.on("click", onFieldClick).transition().attr("points",
 			function(d) {
 				return hexagonPoints(d)
-			}).attr("stroke", "green").attr("stroke-width", "3").attr("fill",
+			}).attr("stroke", "#ffffff").attr("stroke-width", "3").attr("fill",
 			function(d) {
 				return d.fill
 			}).attr("iField", function(d) {
@@ -120,7 +115,7 @@ function drawBoard() {
 		return d.x
 	}).attr("cy", function(d) {
 		return d.y
-	}).attr("r", 5).attr("stroke", "black").attr("stroke-width", 1).attr(
+	}).attr("r", 5).attr("stroke", "#000000").attr("stroke-width", 1).attr(
 			"fill", function(d) {
 				return d.fill
 			})
@@ -128,7 +123,7 @@ function drawBoard() {
 		return d.x
 	}).attr("cy", function(d) {
 		return d.y
-	}).attr("r", rAtom).attr("stroke", "black").attr("stroke-width", 1).attr(
+	}).attr("r", rAtom).attr("stroke", "#000000").attr("stroke-width", 1).attr(
 			"fill", function(d) {
 				return d.fill
 			})
