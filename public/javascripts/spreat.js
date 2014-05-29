@@ -6,6 +6,7 @@ var boardSize = 5
 var pad = 10
 var rx = 25
 var ry = (2 / 3) * rx * Math.sqrt(3)
+var rAtom = 5
 var fields = []
 var atoms = []
 
@@ -50,6 +51,7 @@ function initFields() {
 					iy : iy,
 					iField : fields.length,
 					iNeighbours : [],
+					atoms : [],
 					fill : "yellow"
 				})
 			}
@@ -84,31 +86,35 @@ function onFieldClick(event) {
 	atom.x = mousePos[0]
 	atom.y = mousePos[1]
 	atom.fill = "orange"
+	atom.iField = iField
 	atoms.push(atom)
+	field.atoms.push(atom)
+	for (var i = 0; i < 3; i++) {
+		packAtomsOnField(field, 2 * rAtom + 2, rx - rAtom - 3)
+	}
 	drawBoard()
 }
 
 function drawBoard() {
 	var fieldShapes = d3.select("svg").selectAll("polygon").data(fields)
-	fieldShapes.enter().append("polygon").on("click", onFieldClick).transition().attr("points",
+	fieldShapes.enter().append("polygon").on("click", onFieldClick)
+			.transition().attr("points", function(d) {
+				return hexagonPoints(d)
+			}).attr("stroke", "green").attr("stroke-width", "3").attr("fill",
+					function(d) {
+						return d.fill
+					}).attr("iField", function(d) {
+				return d.iField
+			})
+	fieldShapes.on("click", onFieldClick).transition().attr("points",
 			function(d) {
 				return hexagonPoints(d)
 			}).attr("stroke", "green").attr("stroke-width", "3").attr("fill",
 			function(d) {
 				return d.fill
-			}).attr("iField",
-			function(d) {
-				return d.iField
-			})
-	fieldShapes.on("click", onFieldClick).transition().attr("points", function(d) {
-		return hexagonPoints(d)
-	}).attr("stroke", "green").attr("stroke-width", "3").attr("fill",
-			function(d) {
-				return d.fill
-			}).attr("iField",
-			function(d) {
-				return d.iField
-			})
+			}).attr("iField", function(d) {
+		return d.iField
+	})
 	var atomShapes = d3.select("svg").selectAll("circle").data(atoms)
 	atomShapes.enter().append("circle").transition().attr("cx", function(d) {
 		return d.x
@@ -122,7 +128,7 @@ function drawBoard() {
 		return d.x
 	}).attr("cy", function(d) {
 		return d.y
-	}).attr("r", 5).attr("stroke", "black").attr("stroke-width", 1).attr(
+	}).attr("r", rAtom).attr("stroke", "black").attr("stroke-width", 1).attr(
 			"fill", function(d) {
 				return d.fill
 			})
@@ -133,3 +139,39 @@ function drawNewBoard() {
 	drawBoard()
 }
 
+function shiftAtomToR(atom, anchor, r, shiftIfCloser) {
+	var dx = atom.x - anchor.x
+	var dy = atom.y - anchor.y
+	var distSq = dx * dx + dy * dy
+	if (shiftIfCloser && distSq < r * r) {
+		if (distSq == 0) {
+			atom.x = atom.x + 1
+			dx = atom.x - anchor.x
+			dy = atom.y - anchor.y
+			distSq = dx * dx + dy * dy
+		}
+		var dist = Math.sqrt(distSq)
+		atom.x = anchor.x + (r / dist) * (atom.x - anchor.x)
+		atom.y = anchor.y + (r / dist) * (atom.y - anchor.y)
+	} else if (!shiftIfCloser && distSq > r * r) {
+		var dist = Math.sqrt(distSq)
+		atom.x = anchor.x + (r / dist) * (atom.x - anchor.x)
+		atom.y = anchor.y + (r / dist) * (atom.y - anchor.y)
+	}
+}
+
+function packAtomsOnField(field, dAtom, rField) {
+	var atoms = field.atoms
+	if (atoms.length > 0) {
+		for (i1 = 0; i1 < atoms.length; i1++) {
+			var atom1 = atoms[i1]
+			for (i2 = 0; i2 < atoms.length; i2++) {
+				if (i1 != i2) {
+					var atom2 = atoms[i2]
+					shiftAtomToR(atom1, atom2, dAtom, true)
+				}
+			}
+			shiftAtomToR(atom1, field, rField, false)
+		}
+	}
+}
