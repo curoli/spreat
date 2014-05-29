@@ -84,9 +84,8 @@ function onFieldClick(event) {
 	atom.iField = iField
 	atoms.push(atom)
 	field.atoms.push(atom)
-	for (var i = 0; i < 3; i++) {
-		packAtomsOnField(field, 2 * rAtom + 2, rx - rAtom - 3)
-	}
+	packAtomsOnField(field)
+	redistributeAtoms()
 	drawBoard()
 }
 
@@ -155,18 +154,49 @@ function shiftAtomToR(atom, anchor, r, shiftIfCloser) {
 	}
 }
 
-function packAtomsOnField(field, dAtom, rField) {
+function packAtomsOnField(field) {
 	var atoms = field.atoms
+	var dAtom = 2 * rAtom + 2
+	var rField = rx - rAtom - 3
 	if (atoms.length > 0) {
-		for (i1 = 0; i1 < atoms.length; i1++) {
-			var atom1 = atoms[i1]
-			for (i2 = 0; i2 < atoms.length; i2++) {
-				if (i1 != i2) {
-					var atom2 = atoms[i2]
-					shiftAtomToR(atom1, atom2, dAtom, true)
+		for (var i = 0; i < 3; i++) {
+			for (var i1 = 0; i1 < atoms.length; i1++) {
+				var atom1 = atoms[i1]
+				for (var i2 = 0; i2 < atoms.length; i2++) {
+					if (i1 != i2) {
+						var atom2 = atoms[i2]
+						shiftAtomToR(atom1, atom2, dAtom, true)
+					}
 				}
+				shiftAtomToR(atom1, field, rField, false)
 			}
-			shiftAtomToR(atom1, field, rField, false)
 		}
+	}
+}
+
+function redistributeAtoms() {
+	var keepGoing = true
+	while (keepGoing) {
+		keepGoing = false
+		for (var iField = 0; iField < fields.length; iField++) {
+			var field = fields[iField]
+			if (field.atoms.length >= field.iNeighbours.length) {
+				for (var iFieldAtom = 0; iFieldAtom < field.iNeighbours.length; iFieldAtom++) {
+					field.atoms[iFieldAtom].iField = field.iNeighbours[iFieldAtom]
+				}
+				keepGoing = true
+			}
+			field.atoms = []
+		}
+		for (var iAtom = 0; iAtom < atoms.length; iAtom++) {
+			var atom = atoms[iAtom]
+			var field = fields[atom.iField]
+			field.atoms.push(atom)
+		}
+		for (var iField = 0; iField < fields.length; iField++) {
+			var field = fields[iField]
+			packAtomsOnField(field)
+		}
+		drawBoard()
 	}
 }
