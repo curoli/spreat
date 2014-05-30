@@ -9,6 +9,7 @@ var ry = (2 / 3) * rx * Math.sqrt(3)
 var rAtom = 7
 var fields = []
 var atoms = []
+var atomShapes
 var player1 = {
 	color : "yellow"
 }
@@ -100,16 +101,17 @@ function onFieldClick(event) {
 			atom.owner = currentPlayer
 			atoms.push(atom)
 			field.atoms.push(atom)
+			refreshAtomShapes()
+			drawAtoms()
 			packAtomsOnField(field)
 			redistributeAtoms()
-			drawBoard()
 			iCurrentPlayer = (iCurrentPlayer + 1) % players.length
 		}
 	}
 	waitingToMove = true
 }
 
-function drawBoard() {
+function drawFields() {
 	var fieldShapes = d3.select("svg").selectAll("polygon").data(fields)
 	fieldShapes.enter().append("polygon").on("click", onFieldClick)
 			.transition().attr("points", function(d) {
@@ -129,15 +131,15 @@ function drawBoard() {
 			}).attr("iField", function(d) {
 		return d.iField
 	})
-	var atomShapes = d3.select("svg").selectAll("circle").data(atoms)
-	atomShapes.enter().append("circle").transition().attr("cx", function(d) {
-		return d.x
-	}).attr("cy", function(d) {
-		return d.y
-	}).attr("r", 5).attr("stroke", "#000000").attr("stroke-width", 1).attr(
-			"fill", function(d) {
-				return d.fill
-			})
+	
+}
+
+function refreshAtomShapes() {
+	atomShapes = d3.select("svg").selectAll("circle").data(atoms)
+	atomShapes.enter().append("circle")	
+}
+
+function drawAtoms() {
 	atomShapes.transition().attr("cx", function(d) {
 		return d.x
 	}).attr("cy", function(d) {
@@ -145,12 +147,14 @@ function drawBoard() {
 	}).attr("r", rAtom).attr("stroke", "#000000").attr("stroke-width", 1).attr(
 			"fill", function(d) {
 				return d.owner.color
-			})
+			})	
 }
 
 function drawNewBoard() {
 	initFields()
-	drawBoard()
+	drawFields()
+	refreshAtomShapes()
+	drawAtoms()
 	waitingForMove = true
 }
 
@@ -193,9 +197,13 @@ function packAtomsOnField(field) {
 			}
 		}
 	}
+	drawAtoms()
 }
 
 function redistributeAtoms() {
+	var durationPack = 100
+	var durationSpread = 1000
+	var delay = 200
 	var currentPlayer = players[iCurrentPlayer]
 	var keepGoing = true
 	while (keepGoing) {
@@ -231,6 +239,6 @@ function redistributeAtoms() {
 				field.hasOwner = false
 			}
 		}
-		drawBoard()
+		drawAtoms()
 	}
 }
