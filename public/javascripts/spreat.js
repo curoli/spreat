@@ -104,6 +104,7 @@ function onFieldClick(event) {
 			refreshAtomShapes()
 			drawAtoms()
 			packAtomsOnField(field)
+			drawAtoms()
 			redistributeAtoms()
 			iCurrentPlayer = (iCurrentPlayer + 1) % players.length
 		}
@@ -122,8 +123,8 @@ function drawFields() {
 					}).attr("iField", function(d) {
 				return d.iField
 			})
-	fieldShapes.on("click", onFieldClick).transition().attr("points",
-			function(d) {
+	fieldShapes = fieldShapes.on("click", onFieldClick).transition().attr(
+			"points", function(d) {
 				return hexagonPoints(d)
 			}).attr("stroke", "#ffffff").attr("stroke-width", "3").attr("fill",
 			function(d) {
@@ -131,23 +132,23 @@ function drawFields() {
 			}).attr("iField", function(d) {
 		return d.iField
 	})
-	
+
 }
 
 function refreshAtomShapes() {
 	atomShapes = d3.select("svg").selectAll("circle").data(atoms)
-	atomShapes.enter().append("circle")	
+	atomShapes.enter().append("circle")
 }
 
 function drawAtoms() {
-	atomShapes.transition().attr("cx", function(d) {
+	atomShapes = atomShapes.transition().attr("cx", function(d) {
 		return d.x
 	}).attr("cy", function(d) {
 		return d.y
 	}).attr("r", rAtom).attr("stroke", "#000000").attr("stroke-width", 1).attr(
 			"fill", function(d) {
 				return d.owner.color
-			})	
+			})
 }
 
 function drawNewBoard() {
@@ -197,7 +198,6 @@ function packAtomsOnField(field) {
 			}
 		}
 	}
-	drawAtoms()
 }
 
 function redistributeAtoms() {
@@ -230,7 +230,7 @@ function redistributeAtoms() {
 		for (var iField = 0; iField < fields.length; iField++) {
 			var field = fields[iField]
 			if (field.atoms.length > 0) {
-				for(var iFieldAtom = 0; iFieldAtom < field.atoms.length; iFieldAtom++) {
+				for (var iFieldAtom = 0; iFieldAtom < field.atoms.length; iFieldAtom++) {
 					var atom = field.atoms[iFieldAtom]
 					atom.owner = field.owner
 				}
