@@ -7,7 +7,7 @@ import views.html.main
 object SpreatController extends Controller {
 
   def index = Action { implicit request =>
-    Ok(main("the explosive strategy game"))
+    Ok(main("the chain reactive game"))
   }
 
 }
