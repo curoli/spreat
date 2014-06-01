@@ -81,7 +81,6 @@ function initFields() {
 	var fieldShapes = d3.select("svg").attr("width",
 			2 * pad + rx * (4 * boardSize + 2)).attr("height",
 			(2 * pad + rx + ry * (3 * boardSize + 1.5)))
-	d3.select("#numberOfFields").text("Number of fields: " + fields.length)
 }
 
 function onFieldClick(event) {
