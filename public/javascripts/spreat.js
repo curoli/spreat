@@ -205,7 +205,10 @@ function redistributeAtoms() {
 	var delay = 200
 	var currentPlayer = players[iCurrentPlayer]
 	var keepGoing = true
-	while (keepGoing) {
+	var nDistributions = 0
+	var nDistributionsMax = 700
+	while (keepGoing && nDistributions <= nDistributionsMax) {
+		nDistributions++
 		keepGoing = false
 		for (var iField = 0; iField < fields.length; iField++) {
 			var field = fields[iField]
