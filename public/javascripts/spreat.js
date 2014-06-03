@@ -101,9 +101,9 @@ function onFieldClick(event) {
 			atoms.push(atom)
 			field.atoms.push(atom)
 			refreshAtomShapes()
-			drawAtoms()
+			drawAtoms(100)
 			packAtomsOnField(field)
-			drawAtoms()
+			drawAtoms(500)
 			redistributeAtoms()
 			iCurrentPlayer = (iCurrentPlayer + 1) % players.length
 		}
@@ -141,12 +141,13 @@ function drawFields() {
 }
 
 function refreshAtomShapes() {
-	atomShapes = d3.select("svg").selectAll("circle").data(atoms)
+	var atomShapes = d3.select("svg").selectAll("circle").data(atoms)
 	atomShapes.enter().append("circle")
+	atomShapes = atomShapes.transition().duration(0)
 }
 
-function drawAtoms() {
-	atomShapes = atomShapes.transition().attr("cx", function(d) {
+function drawAtoms(duration) {
+	atomShapes = atomShapes.transition().duration(duration).attr("cx", function(d) {
 		return d.x
 	}).attr("cy", function(d) {
 		return d.y
@@ -160,7 +161,7 @@ function drawNewBoard() {
 	initFields()
 	drawFields()
 	refreshAtomShapes()
-	drawAtoms()
+	drawAtoms(100)
 	waitingForMove = true
 }
 
@@ -247,6 +248,6 @@ function redistributeAtoms() {
 				field.hasOwner = false
 			}
 		}
-		drawAtoms()
+		drawAtoms(1000)
 	}
 }
