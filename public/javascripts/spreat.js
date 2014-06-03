@@ -18,7 +18,7 @@ var player2 = {
 }
 var players = [ player1, player2 ]
 var iCurrentPlayer = 0
-var waitingToMove = false
+var waitingToMove = true
 
 function hexagonPoints(cxy) {
 	var xyStrings = []
@@ -107,8 +107,14 @@ function onFieldClick(event) {
 			redistributeAtoms()
 			iCurrentPlayer = (iCurrentPlayer + 1) % players.length
 		}
+		if (atomShapes.length > 0) {
+			atomShapes = atomShapes.each("end", function() {
+				waitingToMove = true
+			})
+		} else {
+			waitingToMove = true
+		}
 	}
-	waitingToMove = true
 }
 
 function drawFields() {
