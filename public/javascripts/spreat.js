@@ -106,13 +106,15 @@ function onFieldClick(event) {
 			drawAtoms(300)
 			redistributeAtoms()
 			iCurrentPlayer = (iCurrentPlayer + 1) % players.length
-		}
-		if (atomShapes.length > 0) {
-			atomShapes = atomShapes.each("end", function() {
+			if (atomShapes.length > 0) {
+				atomShapes = atomShapes.each("end", function() {
+					waitingToMove = true
+				})
+			} else {
 				waitingToMove = true
-			})
+			}
 		} else {
-			waitingToMove = true
+			waitingToMove = true			
 		}
 	}
 }
@@ -252,7 +254,7 @@ function redistributeAtoms() {
 		if (keepGoing) {
 			drawAtoms(1000)
 		} else {
-			drawAtoms(100)			
+			drawAtoms(100)
 		}
 	}
 }
