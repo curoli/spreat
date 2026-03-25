@@ -1,3 +1,0 @@
-GET	   /                    controllers.SpreatController.index
-GET  /assets/*file        controllers.SpreatAssets.at(path="/public", file)
-
