@@ -1,11 +1,9 @@
-spreat
-======
+# spreat
 
 Spreat is a static browser game prototype for a chain-reaction board game on a
 hexagonal grid.
 
-Rules
------
+## Rules
 
 Board game where two (or more) players place atoms on hexagons until these
 explode and distribute atoms around, causing chain reactions.
@@ -24,8 +22,7 @@ chain reaction.
 
 The goal is to turn all other players' atoms into your own.
 
-Run locally
------------
+## Run locally
 
 This project no longer depends on Play Framework. It is a static web project.
 You can either open `index.html` directly in a browser or serve the directory
@@ -39,15 +36,15 @@ python3 -m http.server 8000
 
 Then open `http://localhost:8000/`.
 
-Project structure
------------------
+## Project structure
 
 - `index.html` is the static entry page.
-- `public/javascripts/spreat.js` contains the game logic and rendering.
+- `src/game/` contains the pure board and rules logic.
+- `src/ui/` contains the D3-based rendering and interaction code.
+- `src/main.js` wires game state to the UI and serves as the browser entrypoint.
 - `public/javascripts/d3.js` is the bundled D3 dependency.
 
-History
--------
+## History
 
 This game has been modeled after two games I encountered years ago, both being
 played on a checkerboard.

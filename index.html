@@ -5,13 +5,25 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Spreat - the chain reactive game</title>
         <script src="public/javascripts/d3.js"></script>
-        <script src="public/javascripts/spreat.js"></script>
+        <script src="src/game/board.js"></script>
+        <script src="src/game/players.js"></script>
+        <script src="src/game/rules.js"></script>
+        <script src="src/ui/renderBoard.js"></script>
+        <script src="src/ui/renderAtoms.js"></script>
+        <script src="src/ui/interaction.js"></script>
+        <script src="src/main.js"></script>
         <script>
-            document.addEventListener("DOMContentLoaded", drawNewBoard);
+            document.addEventListener("DOMContentLoaded", function () {
+                window.SpreatApp.boot();
+            });
         </script>
     </head>
     <body>
         <h1>Spreat - the chain reactive game</h1>
+        <p data-role="status"></p>
+        <p>
+            <button type="button" data-role="reset">New game</button>
+        </p>
         <svg width="500" height="300"></svg>
     </body>
 </html>
