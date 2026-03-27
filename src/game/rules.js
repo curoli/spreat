@@ -35,12 +35,42 @@
       .map((field) => field.id);
   }
 
+  function isExplodable(fields, fieldId) {
+    const field = getFieldById(fields, fieldId);
+    return !!field && field.atomCount >= field.neighbors.length;
+  }
+
+  function enqueueIfExplodable(queue, queuedFieldIds, fields, fieldId) {
+    if (!queuedFieldIds[fieldId] && isExplodable(fields, fieldId)) {
+      queue.push(fieldId);
+      queuedFieldIds[fieldId] = true;
+    }
+  }
+
+  function hasOpposingAtoms(state, playerId) {
+    return state.fields.some(
+      (field) =>
+        field.owner !== null && field.owner !== playerId && field.atomCount > 0,
+    );
+  }
+
+  function shouldStopChainReaction(state, playerId) {
+    if (state.moveCount < state.players.length) {
+      return false;
+    }
+
+    return !hasOpposingAtoms(state, playerId);
+  }
+
   function explodeField(state, fieldId, playerId) {
     const fields = cloneFields(state.fields);
     const field = getFieldById(fields, fieldId);
 
     if (!field || field.atomCount < field.neighbors.length) {
-      return { ...state, fields };
+      return {
+        state: { ...state, fields },
+        affectedFieldIds: [],
+      };
     }
 
     field.atomCount -= field.neighbors.length;
@@ -56,7 +86,10 @@
       neighbor.owner = playerId;
     }
 
-    return { ...state, fields };
+    return {
+      state: { ...state, fields },
+      affectedFieldIds: [...field.neighbors, fieldId],
+    };
   }
 
   function resolveChainReactions(state, playerId = state.currentPlayer) {
@@ -64,13 +97,38 @@
       ...state,
       fields: cloneFields(state.fields),
     };
-    let remaining = getExplodableFieldIds(nextState);
+    const queue = [];
+    const queuedFieldIds = {};
     let safety = 0;
 
-    while (remaining.length > 0 && safety < 700) {
+    for (const fieldId of getExplodableFieldIds(nextState)) {
+      enqueueIfExplodable(queue, queuedFieldIds, nextState.fields, fieldId);
+    }
+
+    while (queue.length > 0 && safety < 700) {
+      if (shouldStopChainReaction(nextState, playerId)) {
+        break;
+      }
+
       safety += 1;
-      nextState = explodeField(nextState, remaining[0], playerId);
-      remaining = getExplodableFieldIds(nextState);
+      const fieldId = queue.shift();
+      queuedFieldIds[fieldId] = false;
+
+      if (!isExplodable(nextState.fields, fieldId)) {
+        continue;
+      }
+
+      const result = explodeField(nextState, fieldId, playerId);
+      nextState = result.state;
+
+      for (const affectedFieldId of result.affectedFieldIds) {
+        enqueueIfExplodable(
+          queue,
+          queuedFieldIds,
+          nextState.fields,
+          affectedFieldId,
+        );
+      }
     }
 
     return nextState;
@@ -104,17 +162,47 @@
       },
     ];
 
-    let remaining = getExplodableFieldIds(nextState);
+    const queue = [];
+    const queuedFieldIds = {};
     let safety = 0;
 
-    while (remaining.length > 0 && safety < 700) {
+    for (const explodableFieldId of getExplodableFieldIds(nextState)) {
+      enqueueIfExplodable(
+        queue,
+        queuedFieldIds,
+        nextState.fields,
+        explodableFieldId,
+      );
+    }
+
+    while (queue.length > 0 && safety < 700) {
+      if (shouldStopChainReaction(nextState, playerId)) {
+        break;
+      }
+
       safety += 1;
-      nextState = explodeField(nextState, remaining[0], playerId);
+      const explodingFieldId = queue.shift();
+      queuedFieldIds[explodingFieldId] = false;
+
+      if (!isExplodable(nextState.fields, explodingFieldId)) {
+        continue;
+      }
+
+      const result = explodeField(nextState, explodingFieldId, playerId);
+      nextState = result.state;
       steps.push({
         ...nextState,
         fields: cloneFields(nextState.fields),
       });
-      remaining = getExplodableFieldIds(nextState);
+
+      for (const affectedFieldId of result.affectedFieldIds) {
+        enqueueIfExplodable(
+          queue,
+          queuedFieldIds,
+          nextState.fields,
+          affectedFieldId,
+        );
+      }
     }
 
     const winner = getWinner(nextState);
