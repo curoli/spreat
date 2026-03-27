@@ -2,55 +2,63 @@
   const DEFAULT_OPTIONS = {
     atomRadius: 7,
     duration: 180,
+    fieldRadius: 15,
   };
 
-  function getOffsets(atomCount, distance) {
+  function getOffsets(atomCount, atomRadius, fieldRadius) {
     if (atomCount <= 1) {
       return [{ x: 0, y: 0 }];
     }
 
-    if (atomCount === 2) {
-      return [
-        { x: -distance / 2, y: 0 },
-        { x: distance / 2, y: 0 },
-      ];
+    const smallRingRadius = Math.min(fieldRadius * 0.78, atomRadius * 2);
+
+    if (atomCount >= 2 && atomCount <= 4) {
+      const offsets = [];
+      for (let index = 0; index < atomCount; index += 1) {
+        const angle = -Math.PI / 2 + (2 * Math.PI * index) / atomCount;
+        offsets.push({
+          x: smallRingRadius * Math.cos(angle),
+          y: smallRingRadius * Math.sin(angle),
+        });
+      }
+      return offsets;
     }
 
-    if (atomCount === 3) {
-      return [
-        { x: 0, y: -distance * 0.65 },
-        { x: -distance * 0.6, y: distance * 0.35 },
-        { x: distance * 0.6, y: distance * 0.35 },
-      ];
+    let maxRing = 0;
+    let capacity = 1;
+    while (capacity < atomCount) {
+      maxRing += 1;
+      capacity += 6 * maxRing;
     }
 
-    if (atomCount === 4) {
-      return [
-        { x: -distance / 2, y: -distance / 2 },
-        { x: distance / 2, y: -distance / 2 },
-        { x: -distance / 2, y: distance / 2 },
-        { x: distance / 2, y: distance / 2 },
-      ];
+    const offsets = [{ x: 0, y: 0 }];
+    const radialStep = maxRing > 0 ? fieldRadius / maxRing : 0;
+    let remaining = atomCount - 1;
+
+    for (let ring = 1; ring <= maxRing && remaining > 0; ring += 1) {
+      const ringCount = Math.min(6 * ring, remaining);
+      const radius = radialStep * ring;
+
+      for (let index = 0; index < ringCount; index += 1) {
+        const angle = -Math.PI / 2 + (2 * Math.PI * index) / ringCount;
+        offsets.push({
+          x: radius * Math.cos(angle),
+          y: radius * Math.sin(angle),
+        });
+      }
+
+      remaining -= ringCount;
     }
 
-    if (atomCount === 5) {
-      return [
-        { x: 0, y: 0 },
-        { x: 0, y: -distance },
-        { x: -distance * 0.9, y: -distance * 0.2 },
-        { x: distance * 0.9, y: -distance * 0.2 },
-        { x: 0, y: distance },
-      ];
+    if (radialStep < atomRadius * 1.4) {
+      const scale = radialStep / (atomRadius * 1.4);
+      return offsets.map((offset) => ({
+        x: offset.x * Math.max(scale, 0.55),
+        y: offset.y * Math.max(scale, 0.55),
+      }));
     }
 
-    return [
-      { x: -distance, y: 0 },
-      { x: -distance / 2, y: -distance * 0.8 },
-      { x: distance / 2, y: -distance * 0.8 },
-      { x: distance, y: 0 },
-      { x: distance / 2, y: distance * 0.8 },
-      { x: -distance / 2, y: distance * 0.8 },
-    ];
+    return offsets;
   }
 
   function getAtomLayout(field, atomCount, options = {}) {
@@ -58,10 +66,9 @@
       return [];
     }
 
-    const { atomRadius } = { ...DEFAULT_OPTIONS, ...options };
-    const distance = atomRadius * 2.2;
+    const { atomRadius, fieldRadius } = { ...DEFAULT_OPTIONS, ...options };
 
-    return getOffsets(Math.min(atomCount, 6), distance).map(
+    return getOffsets(atomCount, atomRadius, fieldRadius).map(
       (offset, index) => ({
         id: `${field.id}-${index}`,
         fieldId: field.id,
@@ -75,6 +82,10 @@
   function renderAtoms(svg, state, options = {}) {
     const d3 = window.d3;
     const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
+    if (!options.fieldRadius) {
+      mergedOptions.fieldRadius =
+        state.layout.rx - mergedOptions.atomRadius - 3;
+    }
     const atomData = state.fields.flatMap((field) =>
       getAtomLayout(field, field.atomCount, mergedOptions),
     );

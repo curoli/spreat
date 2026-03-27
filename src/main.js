@@ -5,6 +5,20 @@
   const { renderAtoms } = window.SpreatRenderAtoms;
   const { renderBoard } = window.SpreatRenderBoard;
 
+  function capitalize(text) {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
+  function renderPlayerStatus(player, suffix) {
+    return (
+      `<span style="display:inline-flex;align-items:center;gap:0.45rem;">` +
+      `<span style="width:0.9rem;height:0.9rem;border-radius:999px;` +
+      `display:inline-block;background:${player.color};border:1px solid #000;"></span>` +
+      `<span>${player.name} (${capitalize(player.color)}) ${suffix}</span>` +
+      `</span>`
+    );
+  }
+
   function boot() {
     const svg = document.querySelector("svg");
     const statusElement = document.querySelector("[data-role='status']");
@@ -26,11 +40,17 @@
       }
 
       if (state.winner !== null) {
-        statusElement.textContent = `${state.players[state.winner].name} wins.`;
+        statusElement.innerHTML = renderPlayerStatus(
+          state.players[state.winner],
+          "wins.",
+        );
         return;
       }
 
-      statusElement.textContent = `${state.players[state.currentPlayer].name} to move.`;
+      statusElement.innerHTML = renderPlayerStatus(
+        state.players[state.currentPlayer],
+        "to move.",
+      );
     }
 
     function waitForTransition(transition, fallbackDuration) {
