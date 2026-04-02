@@ -302,6 +302,51 @@ test("getWinner returns null while multiple owners still have atoms", () => {
   assert.equal(rules.getWinner(state), null);
 });
 
+test("turn order skips eliminated players after the opening phase", () => {
+  let state = rules.createInitialState(2, players.createPlayers(3));
+  const moveFieldId = findFieldId(state, 1, 1);
+  const blockerAId = findFieldId(state, 0, 2);
+  const blockerBId = findFieldId(state, 4, 2);
+
+  state = {
+    ...state,
+    currentPlayer: 0,
+    moveCount: 3,
+  };
+  state = setField(state, blockerAId, {
+    owner: 0,
+    atomCount: 1,
+  });
+  state = setField(state, blockerBId, {
+    owner: 2,
+    atomCount: 1,
+  });
+
+  const nextState = rules.applyMove(state, moveFieldId);
+
+  assert.equal(nextState.currentPlayer, 2);
+});
+
+test("players without atoms are not treated as eliminated during the opening phase", () => {
+  let state = rules.createInitialState(2, players.createPlayers(3));
+  const moveFieldId = findFieldId(state, 1, 1);
+  const blockerFieldId = findFieldId(state, 4, 2);
+
+  state = {
+    ...state,
+    currentPlayer: 0,
+    moveCount: 1,
+  };
+  state = setField(state, blockerFieldId, {
+    owner: 2,
+    atomCount: 1,
+  });
+
+  const nextState = rules.applyMove(state, moveFieldId);
+
+  assert.equal(nextState.currentPlayer, 1);
+});
+
 test("opening-phase reactions do not stop just because no opponent atoms exist yet", () => {
   let state = createTestState({ currentPlayer: 0, moveCount: 0 });
   const sourceFieldId = findFieldId(state, 0, 2);

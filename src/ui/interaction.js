@@ -23,6 +23,22 @@
           });
         }, Promise.resolve());
       },
+
+      onFieldHover(fieldId) {
+        const state = getState();
+        if (state.status !== "ready") {
+          return Promise.resolve();
+        }
+
+        setState({
+          ...state,
+          ui: {
+            ...state.ui,
+            hoveredFieldId: fieldId,
+          },
+        });
+        return render({ duration: 0 });
+      },
     };
   }
 

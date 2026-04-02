@@ -1,6 +1,5 @@
 (() => {
   const { createBoard, getFieldById } = window.SpreatBoard;
-  const { getNextPlayerIndex } = window.SpreatPlayers;
 
   function cloneFields(fields) {
     return fields.map((field) => ({ ...field }));
@@ -52,6 +51,31 @@
       (field) =>
         field.owner !== null && field.owner !== playerId && field.atomCount > 0,
     );
+  }
+
+  function hasPlayerAtoms(state, playerId) {
+    return state.fields.some(
+      (field) => field.owner === playerId && field.atomCount > 0,
+    );
+  }
+
+  function isPlayerEliminated(state, playerId) {
+    if (state.moveCount < state.players.length) {
+      return false;
+    }
+
+    return !hasPlayerAtoms(state, playerId);
+  }
+
+  function getNextActivePlayerIndex(state, currentPlayer) {
+    for (let offset = 1; offset <= state.players.length; offset += 1) {
+      const nextPlayer = (currentPlayer + offset) % state.players.length;
+      if (!isPlayerEliminated(state, nextPlayer)) {
+        return nextPlayer;
+      }
+    }
+
+    return currentPlayer;
   }
 
   function shouldStopChainReaction(state, playerId) {
@@ -211,7 +235,7 @@
       winner,
       currentPlayer:
         winner === null
-          ? getNextPlayerIndex(state.players, state.currentPlayer)
+          ? getNextActivePlayerIndex(nextState, state.currentPlayer)
           : state.currentPlayer,
       status: winner === null ? "ready" : "finished",
     };
@@ -256,6 +280,9 @@
     createInitialState,
     canPlayOnField,
     getExplodableFieldIds,
+    getNextActivePlayerIndex,
+    hasPlayerAtoms,
+    isPlayerEliminated,
     explodeField,
     resolveChainReactions,
     getWinner,

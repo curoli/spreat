@@ -3,7 +3,8 @@
   const { createInitialState } = window.SpreatRules;
   const { createInteractionHandlers } = window.SpreatInteraction;
   const { renderAtoms } = window.SpreatRenderAtoms;
-  const { renderBoard } = window.SpreatRenderBoard;
+  const { renderBoard, canPreviewMove, wouldBecomeCritical } =
+    window.SpreatRenderBoard;
 
   function capitalize(text) {
     return text.charAt(0).toUpperCase() + text.slice(1);
@@ -23,8 +24,31 @@
     const svg = document.querySelector("svg");
     const statusElement = document.querySelector("[data-role='status']");
     const resetButton = document.querySelector("[data-role='reset']");
+    const boardSizeSelect = document.querySelector("[data-role='board-size']");
+    const playerCountSelect = document.querySelector(
+      "[data-role='player-count']",
+    );
 
-    let state = createInitialState(5, createPlayers());
+    function getConfig() {
+      return {
+        boardSize: Number(boardSizeSelect ? boardSizeSelect.value : 5),
+        playerCount: Number(playerCountSelect ? playerCountSelect.value : 2),
+      };
+    }
+
+    function createConfiguredState(config) {
+      return {
+        ...createInitialState(
+          config.boardSize,
+          createPlayers(config.playerCount),
+        ),
+        ui: {
+          hoveredFieldId: null,
+        },
+      };
+    }
+
+    let state = createConfiguredState(getConfig());
 
     function getState() {
       return state;
@@ -39,12 +63,37 @@
         return;
       }
 
+      const hoveredField =
+        state.ui && state.ui.hoveredFieldId !== null
+          ? state.fields.find(
+              (field) => field.id === state.ui.hoveredFieldId,
+            ) || null
+          : null;
+
       if (state.winner !== null) {
         statusElement.innerHTML = renderPlayerStatus(
           state.players[state.winner],
           "wins.",
         );
         return;
+      }
+
+      if (hoveredField && state.status === "ready") {
+        if (!canPreviewMove(state, hoveredField)) {
+          statusElement.innerHTML = renderPlayerStatus(
+            state.players[state.currentPlayer],
+            "cannot play on the hovered field.",
+          );
+          return;
+        }
+
+        if (wouldBecomeCritical(hoveredField)) {
+          statusElement.innerHTML = renderPlayerStatus(
+            state.players[state.currentPlayer],
+            "can trigger an immediate explosion here.",
+          );
+          return;
+        }
       }
 
       statusElement.innerHTML = renderPlayerStatus(
@@ -88,7 +137,7 @@
           state.layout.ry * (3 * state.boardSize + 1.5),
       );
 
-      renderBoard(svg, state, handlers);
+      renderBoard(svg, state, state.ui || {}, handlers);
       const atomTransition = renderAtoms(svg, state, { duration });
       renderStatus();
       return waitForTransition(atomTransition, duration);
@@ -102,7 +151,7 @@
 
     if (resetButton) {
       resetButton.addEventListener("click", () => {
-        state = createInitialState(5, createPlayers());
+        state = createConfiguredState(getConfig());
         render({ duration: 120 });
       });
     }
