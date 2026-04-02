@@ -302,6 +302,28 @@ test("getWinner returns null while multiple owners still have atoms", () => {
   assert.equal(rules.getWinner(state), null);
 });
 
+test("getPlayableFieldIds includes empty and owned fields but excludes opposing ones", () => {
+  let state = createTestState({ currentPlayer: 0, moveCount: 2 });
+  const ownedFieldId = findFieldId(state, 0, 2);
+  const opposingFieldId = findFieldId(state, 4, 2);
+  const emptyFieldId = findFieldId(state, 1, 1);
+
+  state = setField(state, ownedFieldId, {
+    owner: 0,
+    atomCount: 1,
+  });
+  state = setField(state, opposingFieldId, {
+    owner: 1,
+    atomCount: 1,
+  });
+
+  const playableFieldIds = rules.getPlayableFieldIds(state);
+
+  assert.ok(playableFieldIds.includes(ownedFieldId));
+  assert.ok(playableFieldIds.includes(emptyFieldId));
+  assert.ok(!playableFieldIds.includes(opposingFieldId));
+});
+
 test("turn order skips eliminated players after the opening phase", () => {
   let state = rules.createInitialState(2, players.createPlayers(3));
   const moveFieldId = findFieldId(state, 1, 1);

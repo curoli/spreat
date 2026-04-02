@@ -7,8 +7,10 @@
     "orange",
     "deeppink",
   ];
+  const HUMAN_PLAYER_TYPE = "human";
+  const COMPUTER_PLAYER_TYPE = "computer";
 
-  function createPlayers(count = 2) {
+  function createPlayers(count = 2, playerTypes = []) {
     const safeCount = Math.max(2, Math.min(count, PLAYER_COLORS.length));
     const players = [];
 
@@ -17,6 +19,10 @@
         id: index,
         color: PLAYER_COLORS[index],
         name: `Player ${index + 1}`,
+        type:
+          playerTypes[index] === COMPUTER_PLAYER_TYPE
+            ? COMPUTER_PLAYER_TYPE
+            : HUMAN_PLAYER_TYPE,
       });
     }
 
@@ -28,6 +34,8 @@
   }
 
   window.SpreatPlayers = {
+    COMPUTER_PLAYER_TYPE,
+    HUMAN_PLAYER_TYPE,
     PLAYER_COLORS,
     createPlayers,
     getNextPlayerIndex,

@@ -34,6 +34,12 @@
       .map((field) => field.id);
   }
 
+  function getPlayableFieldIds(state, playerId = state.currentPlayer) {
+    return state.fields
+      .filter((field) => canPlayOnField(state, field.id, playerId))
+      .map((field) => field.id);
+  }
+
   function isExplodable(fields, fieldId) {
     const field = getFieldById(fields, fieldId);
     return !!field && field.atomCount >= field.neighbors.length;
@@ -280,6 +286,7 @@
     createInitialState,
     canPlayOnField,
     getExplodableFieldIds,
+    getPlayableFieldIds,
     getNextActivePlayerIndex,
     hasPlayerAtoms,
     isPlayerEliminated,

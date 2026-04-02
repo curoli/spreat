@@ -34,6 +34,9 @@
     const d3 = window.d3;
     const board = d3.select(svg);
     const hoveredFieldId = uiState && uiState.hoveredFieldId;
+    const isHumanTurn =
+      state.status === "ready" &&
+      state.players[state.currentPlayer].type === "human";
     const selection = board
       .selectAll("polygon.spreat-field")
       .data(state.fields);
@@ -62,9 +65,7 @@
       .attr("stroke-width", 3)
       .attr("stroke-linejoin", "round")
       .style("cursor", (field) =>
-        state.status === "ready" && canPreviewMove(state, field)
-          ? "pointer"
-          : "not-allowed",
+        isHumanTurn && canPreviewMove(state, field) ? "pointer" : "not-allowed",
       )
       .attr("fill", (field) => {
         if (field.owner === null) {
@@ -78,8 +79,7 @@
           return 0.35;
         }
 
-        const playable =
-          state.status === "ready" && canPreviewMove(state, field);
+        const playable = isHumanTurn && canPreviewMove(state, field);
         const hovered = field.id === hoveredFieldId;
         if (!playable) {
           return hovered ? 0.22 : 0.16;
