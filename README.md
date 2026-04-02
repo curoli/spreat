@@ -36,6 +36,14 @@ python3 -m http.server 8000
 
 Then open `http://localhost:8000/`.
 
+## Run tests
+
+The rules engine test suite uses Node's built-in test runner.
+
+```bash
+node --test test/rules.test.js
+```
+
 ## Project structure
 
 - `index.html` is the static entry page.
