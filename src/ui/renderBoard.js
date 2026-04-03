@@ -34,6 +34,7 @@
     const d3 = window.d3;
     const board = d3.select(svg);
     const hoveredFieldId = uiState && uiState.hoveredFieldId;
+    const lastMoveFieldId = uiState && uiState.lastMoveFieldId;
     const isHumanTurn =
       state.status === "ready" &&
       state.players[state.currentPlayer].type === "human";
@@ -110,6 +111,29 @@
       .attr("fill", "none")
       .attr("stroke", CRITICAL_STROKE_COLOR)
       .attr("stroke-width", 3)
+      .attr("stroke-linejoin", "round");
+
+    const lastMoveSelection = board
+      .selectAll("polygon.spreat-field-last-move")
+      .data(
+        state.fields.filter((field) => field.id === lastMoveFieldId),
+        (field) => field.id,
+      );
+
+    lastMoveSelection.exit().remove();
+
+    lastMoveSelection
+      .enter()
+      .append("polygon")
+      .attr("class", "spreat-field-last-move")
+      .style("pointer-events", "none");
+
+    board
+      .selectAll("polygon.spreat-field-last-move")
+      .attr("points", (field) => hexagonPoints(field, state.layout.ry, 0.8))
+      .attr("fill", "none")
+      .attr("stroke", "#111111")
+      .attr("stroke-width", 2.5)
       .attr("stroke-linejoin", "round");
 
     const previewSelection = board

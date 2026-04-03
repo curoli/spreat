@@ -22,6 +22,26 @@
     );
   }
 
+  function renderWinnerBanner(player) {
+    return (
+      `<span style="display:block;padding:0.55rem 0.8rem;border:2px solid #111;` +
+      `border-radius:0.7rem;background:linear-gradient(135deg,#fff8d6 0%,#ffffff 100%);` +
+      `box-shadow:0 0.2rem 0 #111;">` +
+      `<span style="display:block;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;` +
+      `text-transform:uppercase;color:#5c4a00;">Game Over</span>` +
+      `<span style="display:inline-flex;align-items:center;gap:0.5rem;margin-top:0.2rem;` +
+      `font-size:1rem;font-weight:800;color:#111;">` +
+      `<span style="width:0.9rem;height:0.9rem;border-radius:999px;display:inline-block;` +
+      `background:${player.color};border:2px solid #111;"></span>` +
+      `<span>${player.name} wins!</span>` +
+      `</span>` +
+      `<span style="display:block;margin-top:0.2rem;color:#444;font-size:0.9rem;">` +
+      `${capitalize(player.color)} atoms dominate the board.` +
+      `</span>` +
+      `</span>`
+    );
+  }
+
   function getPlayerSummaryStatus(state, player) {
     if (state.winner !== null && state.winner === player.id) {
       return "Winner";
@@ -119,6 +139,21 @@
       playerTypesElement.innerHTML = controls.join(" ");
     }
 
+    function syncPlayerTypesToState() {
+      const selectedTypes = getPlayerTypeValues();
+
+      state = {
+        ...state,
+        players: state.players.map((player, index) => ({
+          ...player,
+          type:
+            selectedTypes[index] === COMPUTER_PLAYER_TYPE
+              ? COMPUTER_PLAYER_TYPE
+              : HUMAN_PLAYER_TYPE,
+        })),
+      };
+    }
+
     function getConfig() {
       return {
         boardSize: Number(boardSizeSelect ? boardSizeSelect.value : 5),
@@ -135,6 +170,7 @@
         ),
         ui: {
           hoveredFieldId: null,
+          lastMoveFieldId: null,
         },
       };
     }
@@ -163,10 +199,14 @@
           : null;
 
       if (state.winner !== null) {
-        statusElement.innerHTML = renderPlayerStatus(
+        statusElement.innerHTML = renderWinnerBanner(
           state.players[state.winner],
-          "wins.",
         );
+        return;
+      }
+
+      if (state.status !== "ready") {
+        statusElement.textContent = "Resolving chain reaction...";
         return;
       }
 
@@ -267,11 +307,19 @@
       }
 
       clearPendingComputerTurn();
+      const nextUi = {
+        ...(currentState.ui || {}),
+        hoveredFieldId: null,
+        lastMoveFieldId: fieldId,
+      };
 
       return result.steps
         .reduce((sequence, step, index) => {
           return sequence.then(() => {
-            setState(step);
+            setState({
+              ...step,
+              ui: nextUi,
+            });
             return render({
               duration: index === 0 ? 220 : 420,
             });
@@ -330,6 +378,14 @@
     if (playerCountSelect) {
       playerCountSelect.addEventListener("change", () => {
         renderPlayerTypeControls();
+      });
+    }
+
+    if (playerTypesElement) {
+      playerTypesElement.addEventListener("change", () => {
+        clearPendingComputerTurn();
+        syncPlayerTypesToState();
+        render({ duration: 0 }).then(() => ensureComputerTurn());
       });
     }
 

@@ -22,11 +22,19 @@
         if (result.state === state || result.steps.length === 0) {
           return Promise.resolve();
         }
+        const nextUi = {
+          ...(state.ui || {}),
+          hoveredFieldId: null,
+          lastMoveFieldId: fieldId,
+        };
 
         return result.steps
           .reduce((sequence, step, index) => {
             return sequence.then(() => {
-              setState(step);
+              setState({
+                ...step,
+                ui: nextUi,
+              });
               return render({
                 duration: index === 0 ? 220 : 420,
               });
